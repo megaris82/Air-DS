@@ -1,9 +1,11 @@
 <?php
-$isLoggedIn = isset($_SESSION['username']);
-
-#υλοποίηση logout με απλή χρήση μεταβλητής
-if (isset($_GET['logout']) && $_GET['logout'] === 'true') {
-  $_SESSION = [];
+$isLoggedIn = isset($_COOKIE['isLoggedIn']) && $_COOKIE['isLoggedIn'] === 'true';
+#υλοποίηση logout με απλή χρήση μεταβλητής-cookie
+if (isset($_GET['logout']) && $_GET['logout'] === 'true') {#διαγραφή cookie
+    setcookie("isLoggedIn", "", time() - 3600, "/"); 
+    $isLoggedIn = false;
+    header("Location: login.php");#ανακατεύθυνση στο login
+    exit(); 
 }
 ?>
 
@@ -30,7 +32,7 @@ if (isset($_GET['logout']) && $_GET['logout'] === 'true') {
             </div>
             <div class="login-menu" id="login-menu">
                 <?php if ($isLoggedIn): ?>
-                    <a href="login.php"?logout=true>Logout</a><!--ανακατευθύνει στο login form αλλά υλοποιεί και logout με χρήση της μεταβλητής-->
+                    <a href="login.php?logout=true">Logout</a><!--ανακατευθύνει στο login form αλλά υλοποιεί και logout με χρήση της μεταβλητής-->
                 <?php else: ?>
                     <a href="login.php">Login</a>
                 <?php endif; ?>
@@ -44,7 +46,6 @@ if (isset($_GET['logout']) && $_GET['logout'] === 'true') {
             <div></div>
         </div>
     </nav>
-    <?php include 'footer.php'; ?>
     
     <!--απλό σκριπτακι που υλοποιεί το hamburger menu μέσω αλλαγή css κλάσης-->
     <script>
