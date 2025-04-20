@@ -1,9 +1,8 @@
 <?php
-$isLoggedIn = isset($_COOKIE['isLoggedIn']) && $_COOKIE['isLoggedIn'] === 'true';
+$isLoggedIn = isset($_COOKIE['isLoggedIn']) && !empty($_COOKIE['isLoggedIn']);//να υπάρχει και να μην είναι άδειο το cookie
 #υλοποίηση logout με απλή χρήση μεταβλητής-cookie
 if (isset($_GET['logout']) && $_GET['logout'] === 'true') {#διαγραφή cookie
     setcookie("isLoggedIn", "", time() - 3600, "/"); 
-    $isLoggedIn = false;
     header("Location: login.php");#ανακατεύθυνση στο login
     exit(); 
 }
@@ -15,7 +14,6 @@ if (isset($_GET['logout']) && $_GET['logout'] === 'true') {#διαγραφή coo
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="navbar.css">
-    <title>Air DS</title>
 </head>
 <body>
     <!--για το navbar θα χρησιμοποιησω κλαση logo, main και login-->

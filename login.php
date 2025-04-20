@@ -37,7 +37,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             if ($result->num_rows > 0) {//εμφάνιση σφάλματος αν υπάρχει
                 $reg_error = "Το username ή το email υπάρχει ήδη.";
             } else {//αλλιώς εγγραφή στην βάση
-                $hashed_pass = password_hash($password, PASSWORD_DEFAULT);
+                $hashed_pass = password_hash($password, PASSWORD_DEFAULT);//χρήση της password_hash της php για κρυπτογράφηση των κωδικών
                 $stmt = $conn->prepare("INSERT INTO users (first_name, last_name, username, password, email) VALUES (?, ?, ?, ?, ?)");
                 $stmt->bind_param("sssss", $first_name, $last_name, $username, $hashed_pass, $email);
                 $stmt->execute();
@@ -57,7 +57,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $user = $stmt->get_result()->fetch_assoc();
 
         if ($user && password_verify($password, $user['password'])) {//αν υπάρχει ο χρήστης και ο κωδικός είναι σωστός τότε είσοδος
-            setcookie("isLoggedIn", "true", time() + 3600, "/"); //cookie εισόδου για μια ώρα, γίνεται manipulate στο navbar.php για να εμφανίζεται και να υλοποιείται το logout
+            setcookie("isLoggedIn", $user['user_id'] , time() + 3600, "/"); //cookie εισόδου για μια ώρα, κρατάει userid για το interface book_flight
+            //γίνεται manipulate στο navbar.php για να εμφανίζεται και να υλοποιείται το logout
+            header("Location: home.php");//ανακατεύθυνση στο home.php αν συνδεθεί επιτυχώς με σκοπό να κάνει κράτηση (αν θέλει ανακατευθύνεται μόνος του στο mytrips μέσω navbar)
             exit();
         } else {
             $login_error = "Λάθος username ή κωδικός.";
@@ -75,7 +77,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 </head>
 <body>
     <?php include 'navbar.php'; ?>
-
+    <div id="popup-message" class="popup"></div>
     <div class="form-wrapper">
         <div id="loginForm">
             <h2>Σύνδεση</h2><!--σύνδεση, username/pass required-->
@@ -104,7 +106,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <label>E-mail:</label>
                 <input type="email" name="email" required>
                 <input type="submit" name="register" value="Εγγραφή">
-                <div class="error"><?= $reg_error ?></div>
+                <div class="error"><?= $reg_error ?></div>       
             </form>
         </div>
     </div>
@@ -116,7 +118,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         const registerForm = document.getElementById("registerForm");
         const showRegister = document.getElementById("showRegister");
 
-        showRegister.addEventListener("click", () => {
+        showRegister.addEventListener("click", () => {//event για την αλλαγή από login σε register
             loginForm.style.display = "none";
             registerForm.style.display = "block";
         });
@@ -127,9 +129,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             registerForm.style.display = "block";
         <?php endif; ?>
 
-        <?php if (!empty($reg_success)): ?>//εμφάνιση αλερτ κατά την επιτυχή εγγραφή
-            alert("Εγγραφήκατε επιτυχώς!");
+        <?php if (!empty($reg_success)): ?>//alert για επιτυχή εγγραφή με popup που φεύγει μετά απο 2secs
+            document.addEventListener("DOMContentLoaded", () => {
+                const popup = document.getElementById("popup-message");
+                popup.textContent = "Εγγραφήκατε επιτυχώς!";
+                popup.classList.add("show");
+                setTimeout(() => popup.classList.remove("show"), 2000);
+            });
         <?php endif; ?>
+
     </script>
 </body>
 </html>

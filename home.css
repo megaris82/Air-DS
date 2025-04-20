@@ -1,0 +1,62 @@
+/* home.css */
+
+body {
+    background-color: white;
+    color: black;
+    margin: 0;
+    padding-top: 100px;
+    display: flex;
+    align-items: center;
+}
+
+form {
+    background-color: white;
+    width: 60%;
+    padding: 30px;
+    border: 4px solid midnightblue;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top:100px;
+}
+
+form label {
+    display: block;
+    margin-top: 15px;
+    font-weight: bold;
+}
+
+form input[type="date"],
+form input[type="number"],
+form select {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    border: 1px solid midnightblue;
+    color: black;
+    background-color: white;
+}
+
+form button,
+form input[type="submit"] {
+    margin-top: 20px;
+    width: 40%;
+    padding: 12px;
+    background-color: midnightblue;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+form button:hover:enabled,
+form input[type="submit"]:hover:enabled {
+    box-shadow: 0 5px 15px midnightblue;
+    background-color: midnightblue;
+}
+
+form button:disabled,
+form input[type="submit"]:disabled {
+    background-color: white;
+    color: gray;
+    cursor: not-allowed;
+}

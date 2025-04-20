@@ -16,7 +16,7 @@
   justify-content: center;
   text-align: center;
   width: 100%;
-  margin-top: auto;
+  margin-top: 100px;
 }
   .footer h2 {/*συγκεκριμένο rule για να κάνει overwrite τα color στα διάφορα interfaces στα οποία γίνεται include το footer*/
     color: white;
