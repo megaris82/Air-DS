@@ -146,7 +146,14 @@
                     ?>
                 </div>
             </div>
-            
+            <div id="booking-summary" style="display: none;">
+                <h3>Επισκόπηση Κράτησης</h3>
+                <div id="summary-passengers"></div>
+                <p><strong>Από:</strong> <?= htmlspecialchars($dep_name); ?></p>
+                <p><strong>Προς:</strong> <?= htmlspecialchars($arr_name); ?></p>
+                <p><strong>Ημερομηνία Πτήσης:</strong> <?= htmlspecialchars($flight_date); ?></p>
+                <p><strong>Συνολικό Κόστος:</strong> — €</p>
+            </div>
             
 
             <input type="hidden" name="selected_seats" id="selected-seats-input" value="">
@@ -157,44 +164,67 @@
     <?php include 'footer.php'; ?>
 
     <script>
-    document.addEventListener("DOMContentLoaded", function() {
-    const passengerCount = <?=($passengerCount); ?>;
+document.addEventListener("DOMContentLoaded", function() {
+    const passengerCount = <?= ($passengerCount); ?>;
 
-    if (passengerCount === 1 ) {
+    if (passengerCount === 1) {
         checkLastNameInput(0, passengerCount);
     }
 });
 
-// Show seat map only if the last passenger's last name input is valid
 function checkLastNameInput(i, passengerCount) {
     const lastNameInput = document.getElementsByName('last_name[]')[i];
     const seatMap = document.getElementById('seat-map');
 
-    // Check if the last name input is valid
     const isValid = lastNameInput.value.length >= 3 &&
                     lastNameInput.value.length <= 20 &&
                     /^[A-Za-zΑ-Ωα-ω]+$/.test(lastNameInput.value);
 
-    // Only show seat map if last passenger's last name is valid
-    if (i === passengerCount - 1) { // Check if it's the last passenger
+    if (i === passengerCount - 1) {
         seatMap.style.display = isValid ? 'block' : 'none';
     }
 }
 
-// Toggle selected state of a seat
 function toggleSeat(seatDiv) {
     if (!seatDiv.classList.contains('seat-available')) return;
 
-    const maxSeats = <?= json_encode($passengerCount); ?>;
-    const currentlySelected = document.querySelectorAll('.seat.seat-selected').length;
-
-    // If selecting a seat, lock it in for the passenger
     seatDiv.classList.toggle('seat-selected');
+
+    const maxSeats = <?= ($passengerCount); ?>;
+    const selectedSeats = document.querySelectorAll('.seat.seat-selected');
+    const seatMap = document.getElementById('seat-map');
+    const passengerInputs = document.querySelectorAll('.passenger');
+
+
     updateSelectedSeatsInput();
-    checkSeatsCompletion();
+
+    if (selectedSeats.length === maxSeats) {
+        seatMap.style.display = 'none';
+        passengerInputs.forEach(div => div.style.display = 'none');
+
+        // Show summary
+        const summaryDiv = document.getElementById('booking-summary');
+        const summaryPassengers = document.getElementById('summary-passengers');
+        const firstNames = document.getElementsByName('first_name[]');
+        const lastNames = document.getElementsByName('last_name[]');
+
+        const seatLabels = Array.from(selectedSeats).map(seat => {
+            const row = seat.closest('.seat-row').querySelector('.row-number').textContent;
+            const col = seat.textContent.trim();
+            return row + col;
+        });
+
+        let html = "<ul style='list-style-type: none; padding-left: 0;'>";
+        for (let i = 0; i < maxSeats; i++) {
+            html += `<li><strong>Επιβάτης ${i + 1}:</strong> ${firstNames[i].value} ${lastNames[i].value} <br> Θέση ${seatLabels[i]}</li>`;
+        }
+        html += "</ul>";
+
+        summaryPassengers.innerHTML = html;
+        summaryDiv.style.display = 'block';
+    }
 }
 
-// Update hidden input with selected seat IDs
 function updateSelectedSeatsInput() {
     const selectedSeats = Array.from(document.querySelectorAll('.seat.seat-selected'))
         .map(seat => {
@@ -206,8 +236,8 @@ function updateSelectedSeatsInput() {
 
     document.getElementById('selected-seats-input').value = JSON.stringify(selectedSeats);
 }
-
 </script>
+
 
 
 </body>
