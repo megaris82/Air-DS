@@ -7,7 +7,7 @@
     $user = 'root';
     $pass = '';
     $conn = new mysqli($host, $user, $pass, $db);
-    
+
     if ($conn->connect_error) {
         die("Αδυναμία σύνδεσης με την βάση δεδομένων: " . $conn->connect_error);
     }
@@ -17,17 +17,17 @@
     $departure_airport_id = $_POST['departure_airport'] ?? '';
     $arrival_airport_id = $_POST['arrival_airport'] ?? '';
     $flight_date = $_POST['flight_date'] ?? '';
-    
+
     //insert εγγραφής στην reservations
-    // Εισαγωγή νέας κράτησης στη βάση δεδομένων με κενό JSON για τις θέσεις
+    // Εισαγωγή νέας κράτησης στη βάση δεδομένων με κενό JSON για τις θέσεις και κατάσταση 'pending'
     $insertReservationQuery = "INSERT INTO reservations (departure_airport_id, arrival_airport_id,reservation_date,reservation_status,reserved_seats_json,total_amount)
-    VALUES (?, ?, ?, 'pending', ?, 0)";//pending (αλλάζει σε cancelled/valid), totalcost 0 (θα υπολογιστεί αργότερα)
+    VALUES (?, ?, ?, 'pending', ?, 0)";
     $stmt = $conn->prepare($insertReservationQuery);
-    $empty_reserved_seats_json = json_encode([]);//άδειο json για τις θέσεις, update μετά
+    $empty_reserved_seats_json = json_encode([]);
     $stmt->bind_param("iiss", $departure_airport_id, $arrival_airport_id, $flight_date, $empty_reserved_seats_json);
     $stmt->execute();
 
-    $reservation_id = $stmt->insert_id;//αποθήκευση του reservation_id της τελευταίας εγγραφής
+    $reservation_id = $stmt->insert_id;
     $stmt->close();
 
     //αντιστοίχηση της κράτησης με τον χρήστη
@@ -36,8 +36,6 @@
     $stmt->bind_param("ii", $reservation_id, $user_id);
     $stmt->execute();
     $stmt->close();
-
-    //ανάκτηση στοιχείων που δεν περνάνε με την φόρμα
 
     //ανάκτηση των στοιχείων του user με id=user_id
     $sql = "SELECT first_name, last_name FROM users WHERE user_id = ?";
@@ -80,25 +78,26 @@
     <div class="container">
         <h1>Κράτηση Πτήσης</h1>
         <form action="my_trips.php" method="POST">
-        <?php
-        for ($i = 0; $i < $passengerCount; $i++) {
-            echo "<div class='passenger'>";
-            echo "<label>Όνομα:</label>";
-            echo "<input type='text' name='first_name[]' 
-                        value=\"" . ($i == 0 ? htmlspecialchars($firstName) : '') . "\" 
-                        " . ($i == 0 ? 'readonly' : '') . " 
-                        required pattern=\"[A-Za-zΑ-Ωα-ω]{3,20}\">";
+            <?php
+            for ($i = 0; $i < $passengerCount; $i++) {
+                echo "<div class='passenger'>";
+                echo "<label>Όνομα:</label>";
+                echo "<input type='text' name='first_name[]' 
+                            value=\"" . ($i == 0 ? htmlspecialchars($firstName) : '') . "\" 
+                            " . ($i == 0 ? 'readonly' : '') . " 
+                            required pattern=\"[A-Za-zΑ-Ωα-ω]{3,20}\">";//έλεγχος για το αν το όνομα είναι έγκυρο, το πρώτο read only
 
-            echo "<label>Επώνυμο:</label>";
-            echo "<input type='text' name='last_name[]' 
-                        value=\"" . ($i == 0 ? htmlspecialchars($lastName) : '') . "\" 
-                        " . ($i == 0 ? 'readonly' : '') . " 
-                        required pattern=\"[A-Za-zΑ-Ωα-ω]{3,20}\"
-                        oninput='checkLastNameInput($i, $passengerCount)'>";
-            echo "</div>";
-        }
-        ?>
-            <div id="seat-map" class="seat-map" style="display: none;">
+                echo "<label>Επώνυμο:</label>";
+                echo "<input type='text' name='last_name[]' 
+                            value=\"" . ($i == 0 ? htmlspecialchars($lastName) : '') . "\" 
+                            " . ($i == 0 ? 'readonly' : '') . " 
+                            required pattern=\"[A-Za-zΑ-Ωα-ω]{3,20}\"
+                            oninput='showSeatMap($i, $passengerCount)'>";//όμοια + καλεί την js για να εμφανίσει την επιλογη θέσεων	
+                echo "</div>";
+            }
+            ?>
+
+            <div id="seat-map" class="seat-map" style="display: none;"><!--επιλογή θέσεων, με legend-->
                 <h2>Επιλογή Θέσεων</h2>
                 <div class="seat-legend">
                     <div class="legend-item"><div class="seat-available"></div><span>Διαθέσιμη</span></div>
@@ -118,8 +117,8 @@
 
                     foreach ($rows as $row) {
                         $rowClass = '';
-                    
-                        //έλεγχος για το αν η σειρά αυτή έχει ιδιαίτερο χαρακτηριστικό (για να γίνει έπειτα ανάλογη χρέωση και για να εμφανίζεται διαφορετικά στο seatmap)
+
+                        //έλεγχος για το αν η σειρά αυτή έχει ιδιαίτερο χαρακτηριστικό
                         if ($row == 11) {
                             $rowClass = ' exit-row extra-legroom';
                         } else if ($row == 1 || $row == 12) {
@@ -127,166 +126,51 @@
                         } else if ($row >= 2 && $row <= 10) {
                             $rowClass = ' up-front';
                         }
-                    
-                        echo "<div class='seat-row$rowClass'>";
-                        echo "<div class='row-number'>$row</div>";
-                    
-                        foreach ($columns as $col) {
+
+                        echo "<div class='seat-row$rowClass'>";//δημιουργία σειρών
+                        echo "<div class='row-number'>$row</div>";//εμφάνιση αριθμού σειράς
+                        
+                        foreach ($columns as $col) {//δημιουργία στήλων 
                             $seatId = $row . $col;
                             $seatClass = 'seat-available';
-                            echo "<div class='seat $seatClass' id='seat-$seatId' onclick='toggleSeat(this)'>$col</div>";
-                            if ($col === 'C') echo "<div class='aisle'></div>";
+                            echo "<div class='seat $seatClass' id='seat-$seatId' onclick='toggleSeat(this)'>$col</div>";//επιλογή θέσης υλοποίηση στο book_flight.js
+                            if ($col === 'C') echo "<div class='aisle'></div>";//δημιουργία του διαδρόμου
                         }
-                    
+
                         echo "</div>";
                     }
                     ?>
                 </div>
             </div>
+            
+            <!--επισκόπηση κράτησης αφού συμπληρωθεί το επίθετο του τελευταίου passenger-->
             <div id="booking-summary" style="display: none;">
                 <h3>Επισκόπηση Κράτησης</h3>
                 <div id="summary-passengers"></div>
                 <p><strong>Από:</strong> <?= htmlspecialchars($dep_name); ?></p>
                 <p><strong>Προς:</strong> <?= htmlspecialchars($arr_name); ?></p>
                 <p><strong>Ημερομηνία Πτήσης:</strong> <?= htmlspecialchars($flight_date); ?></p>
-                <p><strong>Συνολικό Κόστος:</strong> <span id="total-cost">€0.00</span></p>
-
-
+                <p><strong>Συνολικό Κόστος:</strong> <span id="total-cost"></span></p>
             </div>
-            
 
-            <input type="hidden" name="selected_seats" id="selected-seats-input" value="">
-            <button type="submit" class="submitButton" id="submitButton" disabled>Κάντε Κράτηση</button>
+            <input type="hidden" name="selected_seats" id="selected-seats-input" value=""><!--πεδίο για το πέρασμα των θέσεων με την φόρμα-->
+            <button type="submit" class="submitButton" id="submitButton" disabled>Κάντε Κράτηση</button><!--το submittion button που αρχικά είναι disabled (μέχρι να κληθεί η showBookingSummary)-->
         </form>
     </div>
 
     <?php include 'footer.php'; ?>
-
-    <script>
-document.addEventListener("DOMContentLoaded", function() {
-    const passengerCount = <?= ($passengerCount); ?>;
-
-    if (passengerCount === 1) {
-        checkLastNameInput(0, passengerCount);
-    }
-});
-
-function checkLastNameInput(i, passengerCount) {
-    const lastNameInput = document.getElementsByName('last_name[]')[i];
-    const seatMap = document.getElementById('seat-map');
-
-    const isValid = lastNameInput.value.length >= 3 &&
-                    lastNameInput.value.length <= 20 &&
-                    /^[A-Za-zΑ-Ωα-ω]+$/.test(lastNameInput.value);
-
-    if (i === passengerCount - 1) {
-        seatMap.style.display = isValid ? 'block' : 'none';
-    }
-}
-
-function toggleSeat(seatDiv) {
-    if (!seatDiv.classList.contains('seat-available')) return;
-
-    seatDiv.classList.toggle('seat-selected');
-
-    const maxSeats = <?= ($passengerCount); ?>;
-    const selectedSeats = document.querySelectorAll('.seat.seat-selected');
-    const seatMap = document.getElementById('seat-map');
-    const passengerInputs = document.querySelectorAll('.passenger');
-
-
-    updateSelectedSeatsInput();
-
-    if (selectedSeats.length === maxSeats) {
-        seatMap.style.display = 'none';
-        passengerInputs.forEach(div => div.style.display = 'none');
-        showBookingSummary()
-    }
-}
-
-function updateSelectedSeatsInput() {
-    const selectedSeats = Array.from(document.querySelectorAll('.seat.seat-selected'))
-        .map(seat => {
-            const rowDiv = seat.closest('.seat-row');
-            const rowNumber = rowDiv.querySelector('.row-number').textContent;
-            const seatLetter = seat.textContent.trim();
-            return rowNumber + seatLetter;
-        });
-
-    document.getElementById('selected-seats-input').value = JSON.stringify(selectedSeats);
-}
-
-const departureTax = <?= $dep_tax ?>;
-const arrivalTax = <?= $arr_tax ?>;
-const depLat = <?= $dep_lat ?>;
-const depLon = <?= $dep_lon ?>;
-const arrLat = <?= $arr_lat ?>;
-const arrLon = <?= $arr_lon ?>;
-
-function calculateDistance(lat1, lon1, lat2, lon2) {
-    const toRad = angle => angle * Math.PI / 180;
-    const R = 6371; 
-    const dLat = toRad(lat2 - lat1);
-    const dLon = toRad(lon2 - lon1);
-    const a = Math.sin(dLat/2)**2 +
-              Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
-              Math.sin(dLon/2)**2;
-    const c = 2 * Math.asin(Math.sqrt(a));
-    return R * c;
-}
-
-function showBookingSummary() {
-    const firstNames = document.getElementsByName('first_name[]');
-    const lastNames = document.getElementsByName('last_name[]');
-    const selectedSeats = document.querySelectorAll('.seat.seat-selected');
-    const seatLabels = Array.from(selectedSeats).map(seat => {
-        const rowDiv = seat.closest('.seat-row');
-        const row = rowDiv.querySelector('.row-number').textContent;
-        const letter = seat.textContent.trim();
-        return row + letter;
-    });
-
-   
-    const totalTax = departureTax + arrivalTax;
-    const flightDistance = calculateDistance(depLat, depLon, arrLat, arrLon);
-    const flightCost = flightDistance / 10;
-
-    let html = "<ul style='list-style: none; padding: 0'>";
-    let totalFinalCost = 0;
-
-    for (let i = 0; i < seatLabels.length; i++) {
-        const seat = seatLabels[i];
-        const row = parseInt(seat.match(/\d+/)[0]);
-
-        let seatCost = 0;
-        if ([1, 11, 12].includes(row)) {
-            seatCost = 20;
-        } else if (row >= 2 && row <= 10) {
-            seatCost = 10;
-        }
-
-        const ticketCost = totalTax + flightCost + seatCost;
-        totalFinalCost += ticketCost;
-
-        html += `<li><strong>Επιβάτης ${i + 1}:</strong> ${firstNames[i].value} ${lastNames[i].value}
-        <br>Θέση: ${seat} <br> Κόστος Θέσης: ${seatCost.toFixed(2)}€ <br> Κόστος Εισιτηρίου: ${ticketCost.toFixed(2)}€<br><br></li>`;
-    }
-
     
-    html += "</ul>";
-    
-    const summaryPassengers = document.getElementById('summary-passengers');
-    const summaryDiv = document.getElementById('booking-summary');
-    document.getElementById('total-cost').textContent = `${totalFinalCost.toFixed(2)}€`;
-    summaryPassengers.innerHTML = html;
-    summaryDiv.style.display = 'block';
-    document.getElementById('submitButton').disabled = false;
-
-}
-
-</script>
-
-
-
+    <script>//πέρασμα των δεδομένων από την βάση στην js
+        const flightData = {
+            passengerCount: <?= $passengerCount ?>,
+            departureTax: <?= $dep_tax ?>,
+            arrivalTax: <?= $arr_tax ?>,
+            departureLat: <?= $dep_lat ?>,
+            departureLon: <?= $dep_lon ?>,
+            arrivalLat: <?= $arr_lat ?>,
+            arrivalLon: <?= $arr_lon ?>
+        };
+    </script>
+    <script src="book_flight.js"></script><!--σύνδεση με την υπόλοιπη js-->
 </body>
 </html>
