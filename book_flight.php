@@ -80,25 +80,25 @@
     <div class="container">
         <h1>Κράτηση Πτήσης</h1>
         <form action="my_trips.php" method="POST">
-            <?php
-            for ($i = 0; $i < $passengerCount; $i++) {
-                echo "<div class='passenger'>";
-                echo "<label>Όνομα:</label>";
-                echo "<input type='text' name='first_name[]' 
-                            value=\"" . ($i == 0 ? htmlspecialchars($firstName) : '') . "\" 
-                            " . ($i == 0 ? 'readonly' : '') . " 
-                            required pattern=\"[A-Za-zΑ-Ωα-ω]{3,20}\">";
+        <?php
+        for ($i = 0; $i < $passengerCount; $i++) {
+            echo "<div class='passenger'>";
+            echo "<label>Όνομα:</label>";
+            echo "<input type='text' name='first_name[]' 
+                        value=\"" . ($i == 0 ? htmlspecialchars($firstName) : '') . "\" 
+                        " . ($i == 0 ? 'readonly' : '') . " 
+                        required pattern=\"[A-Za-zΑ-Ωα-ω]{3,20}\">";
 
-                echo "<label>Επώνυμο:</label>";
-                echo "<input type='text' name='last_name[]' 
-                            value=\"" . ($i == 0 ? htmlspecialchars($lastName) : '') . "\" 
-                            " . ($i == 0 ? 'readonly' : '') . " 
-                            required pattern=\"[A-Za-zΑ-Ωα-ω]{3,20}\"
-                            oninput='checkLastNameInput($i)'>";
-                echo "</div>";
-                
-            }
-            ?>
+            echo "<label>Επώνυμο:</label>";
+            echo "<input type='text' name='last_name[]' 
+                        value=\"" . ($i == 0 ? htmlspecialchars($lastName) : '') . "\" 
+                        " . ($i == 0 ? 'readonly' : '') . " 
+                        required pattern=\"[A-Za-zΑ-Ωα-ω]{3,20}\"
+                        oninput='checkLastNameInput($i, $passengerCount)'>";
+            echo "</div>";
+        }
+        ?>
+
 
             <!-- Seat Map and Selection -->
             <div id="seat-map" class="seat-map" style="display: none;">
@@ -157,24 +157,28 @@
     <?php include 'footer.php'; ?>
 
     <script>
-document.addEventListener("DOMContentLoaded", function() {
+    document.addEventListener("DOMContentLoaded", function() {
     const passengerCount = <?=($passengerCount); ?>;
-    
+
     if (passengerCount === 1 ) {
-        checkLastNameInput(0);
+        checkLastNameInput(0, passengerCount);
     }
 });
 
-// Show seat map only if the user's last name input (passenger 0) is valid
-function checkLastNameInput(i) {
+// Show seat map only if the last passenger's last name input is valid
+function checkLastNameInput(i, passengerCount) {
     const lastNameInput = document.getElementsByName('last_name[]')[i];
     const seatMap = document.getElementById('seat-map');
 
+    // Check if the last name input is valid
     const isValid = lastNameInput.value.length >= 3 &&
                     lastNameInput.value.length <= 20 &&
                     /^[A-Za-zΑ-Ωα-ω]+$/.test(lastNameInput.value);
 
-    seatMap.style.display = isValid ? 'block' : 'none';
+    // Only show seat map if last passenger's last name is valid
+    if (i === passengerCount - 1) { // Check if it's the last passenger
+        seatMap.style.display = isValid ? 'block' : 'none';
+    }
 }
 
 // Toggle selected state of a seat
@@ -183,12 +187,6 @@ function toggleSeat(seatDiv) {
 
     const maxSeats = <?= json_encode($passengerCount); ?>;
     const currentlySelected = document.querySelectorAll('.seat.seat-selected').length;
-
-    // If maximum number of seats selected, don't allow further selections
-    if (!seatDiv.classList.contains('seat-selected') && currentlySelected >= maxSeats) {
-        alert("Έχετε ήδη επιλέξει " + maxSeats + " θέσεις.");
-        return;
-    }
 
     // If selecting a seat, lock it in for the passenger
     seatDiv.classList.toggle('seat-selected');
