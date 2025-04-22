@@ -23,11 +23,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $email = $_POST['email'];
 
         if (!ctype_alpha($first_name) || !ctype_alpha($last_name)) { //έλεγχος ότι περιέχονται μόνο γράμματα
-            $reg_error = "Το όνομα και το επώνυμο πρέπει να περιέχουν μόνο χαρακτήρες.";
+            $reg_error = "Το όνομα και το επώνυμο πρέπει να περιέχουν μόνο χαρακτήρες";
         } elseif (strlen($password) < 4 || strlen($password) > 10 || !preg_match('/\d/', $password)) {//έλεγχος για μέγεθος και αριθμό (digit)
-            $reg_error = "Ο κωδικός πρέπει να έχει 4-10 χαρακτήρες και να περιέχει τουλάχιστον έναν αριθμό.";
+            $reg_error = "Ο κωδικός πρέπει να έχει 4-10 χαρακτήρες και να περιέχει τουλάχιστον έναν αριθμό";
         } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL) || strpos($email, '@') === false) {//έλεγχος για έγκυρο email (@ και domain)
-            $reg_error = "Μη έγκυρο email.";
+            $reg_error = "Μη έγκυρο email";
         } else {//αν όλα πάνε καλά ως εδώ κοιτάμε αν υπάρχει ήδη το username ή το email
             $stmt = $conn->prepare("SELECT * FROM users WHERE username=? OR email=?");
             $stmt->bind_param("ss", $username, $email);
@@ -35,7 +35,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $result = $stmt->get_result();
 
             if ($result->num_rows > 0) {//εμφάνιση σφάλματος αν υπάρχει
-                $reg_error = "Το username ή το email υπάρχει ήδη.";
+                $reg_error = "Το username ή το email υπάρχει ήδη";
             } else {//αλλιώς εγγραφή στην βάση
                 $hashed_pass = password_hash($password, PASSWORD_DEFAULT);//χρήση της password_hash της php για κρυπτογράφηση των κωδικών
                 $stmt = $conn->prepare("INSERT INTO users (first_name, last_name, username, password, email) VALUES (?, ?, ?, ?, ?)");
@@ -56,6 +56,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $stmt->execute();
         $user = $stmt->get_result()->fetch_assoc();
 
+        //χρήση password_verify για αποκρυπτογράφηση του password και ταυτόχρονο έλεγχο
         if ($user && password_verify($password, $user['password'])) {//αν υπάρχει ο χρήστης και ο κωδικός είναι σωστός τότε είσοδος
             setcookie("isLoggedIn", $user['user_id'] , time() + 3600, "/"); //cookie εισόδου για μια ώρα, κρατάει userid για το interface book_flight
             //γίνεται manipulate στο navbar.php για να εμφανίζεται και να υλοποιείται το logout
@@ -77,10 +78,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 </head>
 <body>
     <?php include 'navbar.php'; ?>
-    <div id="popup-message" class="popup"></div>
+    <div id="popup-message" class="popup"></div><!--popup για την επιτυχία της εγγραφής-->
     <div class="form-wrapper">
         <div id="loginForm">
-            <h2>Σύνδεση</h2><!--σύνδεση, username/pass required-->
+            <h2>Σύνδεση</h2>
             <form method="POST">
                 <label>Όνομα χρήστη:</label>
                 <input type="text" name="username" required>
@@ -92,7 +93,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <button id="showRegister" type="button">Δεν έχετε λογαριασμό; Εγγραφή</button><!--για την αλλαγή προς την εγγραφή-->
         </div>
 
-        <div id="registerForm" style="display: none;">
+        <div id="registerForm" style="display: none;"><!--αρχικά δεν εμφανίζεται, κάτω υπάρχει script που αλλάζει το display από none σε block-->
             <h2>Εγγραφή</h2><!--εγγραφή, όλα απαιτούμενα-->
             <form method="POST">
                 <label>Όνομα:</label>

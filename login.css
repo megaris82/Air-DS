@@ -5,6 +5,8 @@ body {
     align-items: center;
     min-height: 100vh;
     padding-top: 100px;
+    background-image: url('background.jpg');
+    background-size: 100%;
 }
 
 .form-wrapper {
@@ -25,8 +27,15 @@ form {
     flex-direction: column;
 }
 
+form label {
+    margin-top: 15px;
+    font-weight: bold;
+    font-size: 1.5em;
+}
+
 input:not([type="submit"]) {
     padding: 8px;
+    margin-top: 10px;
     margin-bottom: 10px;
     border: 1px solid black;
 }

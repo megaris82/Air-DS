@@ -1,0 +1,195 @@
+body {
+    background-color: white;
+    color: black;
+    margin: 0;
+    padding-top: 100px;
+    display: flex;
+    align-items: center;
+    background-image: url('background.jpg');
+    background-size: 100%;
+}
+
+h1 {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.container {
+    background-color: white;
+    width: 60%;
+    padding: 30px;
+    border: 4px solid midnightblue;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top:100px;
+}
+
+form {
+    font-size: 1.5em;
+    font-weight:bold;
+    text-align: center;
+    width: 60%;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+form label {
+    text-align: left;
+    margin-bottom: 5px;
+}
+
+
+button {
+    background-color: midnightblue;
+    color: white;
+    padding: 10px;
+    cursor: pointer;
+}
+
+form button:hover {
+    box-shadow: 0 5px 15px midnightblue;
+}
+
+.passenger {
+    border: 2px solid black;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+}
+
+.passenger input {
+    padding: 5px;
+    margin-bottom: 10px;
+    width: 100%;
+    box-sizing: border-box; 
+}
+
+.airplane-container {
+    padding: 20px;
+    background-color: skyblue;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+.row-number {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-weight: bold;
+}
+
+.seat {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: midnightblue;
+    color: white;
+    cursor: pointer;
+}
+
+.seat-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 50px;
+    width: 100%;
+    position: relative;
+    gap: 5px;
+}
+
+.seat-row.exit-row::before,
+.seat-row.exit-row::after {
+    content: 'EXIT';
+    font-weight: bold;
+    background-color: red;
+    color: white;
+    padding: 5px;
+    position: absolute;
+}
+
+.seat-row.exit-row::before {
+    left: 5px;
+}
+
+.seat-row.exit-row::after {
+    right: 5px;
+}
+
+.seat-row.extra-legroom {
+    background-color: yellow; /* Light yellow */
+}
+
+.seat-row.up-front {
+    background-color: teal; /* Light blue */
+}
+
+.seat.seat-selected {
+    background-color: rgb(0,255,0);
+}
+
+.aisle {
+    width: 3em;
+}
+
+/*legend*/
+.seat-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 20px;
+    width: 100%;
+    justify-content: center;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 1rem;
+}
+
+.legend-item .seat,
+.legend-item .exit-row-indicator,
+.legend-item .extra-legroom,
+.legend-item .up-front ,
+.legend-item .seat-selected,
+.legend-item .seat-available {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid black;
+}
+
+.legend-item .seat-selected{
+    background-color:rgb(0,255,0);
+}
+
+.legend-item .seat-available{
+    background-color:midnightblue;
+}
+
+.legend-item .up-front {
+    background-color: teal;
+}
+
+.legend-item .exit-row-indicator {
+    background-color: red;
+    color: white;
+    font-weight: bold;
+}
+
+.legend-item .extra-legroom {
+    background-color: yellow;
+}
+
+
+

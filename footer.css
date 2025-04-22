@@ -1,12 +1,12 @@
 /*τεσταρισμένο σε opera v117.0.5408.197, μέσω dev tools το grid δουλεύει σωστά
 αλλά κάτω από το footer μένει άσπρο κενό σαν margin, όταν γίνεται testing
 χωρίς devtools (απλό drag του browser σε μικρότερες διαστάσεις) δεν εμφανίζεται το πρόβλημα*/
-  body {
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-    margin: 0;
-  }
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  margin: 0;
+}
 
 .footer {
   background-color: midnightblue;
@@ -18,22 +18,22 @@
   width: 100%;
   margin-top: 100px;
 }
-  .footer h2 {/*συγκεκριμένο rule για να κάνει overwrite τα color στα διάφορα interfaces στα οποία γίνεται include το footer*/
-    color: white;
-  }
+.footer h2 {/*συγκεκριμένο rule για να κάνει overwrite τα color στα διάφορα interfaces στα οποία γίνεται include το footer*/
+  color: white;
+}
 
+.footer-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+  
+.contact-info a {
+  color: white
+}
+  
+@media (max-width: 768px) {
   .footer-content {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
+    grid-template-columns: 1fr;
   }
-  
-  .contact-info a {
-    color: white
-  }
-  
-  @media (max-width: 768px) {
-    .footer-content {
-      grid-template-columns: 1fr;
-    }
-  }
+}

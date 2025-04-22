@@ -1,6 +1,6 @@
 <?php
-$isLoggedIn = isset($_COOKIE['isLoggedIn']) && !empty($_COOKIE['isLoggedIn']);//να υπάρχει και να μην είναι άδειο το cookie
-#υλοποίηση logout με απλή χρήση μεταβλητής-cookie
+$isLoggedIn = isset($_COOKIE['isLoggedIn']) && !empty($_COOKIE['isLoggedIn']);#να υπάρχει και να μην είναι άδειο το cookie
+#υλοποίηση logout με απλή χρήση μεταβλητής-cookie manipulation
 if (isset($_GET['logout']) && $_GET['logout'] === 'true') {#διαγραφή cookie
     setcookie("isLoggedIn", "", time() - 3600, "/"); 
     header("Location: login.php");#ανακατεύθυνση στο login
@@ -26,7 +26,7 @@ if (isset($_GET['logout']) && $_GET['logout'] === 'true') {#διαγραφή coo
         <div class="nav">
             <div class="main-menu" id="main-menu">
                 <a href="home.php">Home</a>
-                <a href="mytrips.php">My Trips</a>
+                <a href="my_trips.php">My Trips</a>
             </div>
             <div class="login-menu" id="login-menu">
                 <?php if ($isLoggedIn): ?>
