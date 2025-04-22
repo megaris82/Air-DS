@@ -154,6 +154,7 @@
             </div>
 
             <input type="hidden" name="selected_seats" id="selected-seats-input" value=""><!--πεδίο για το πέρασμα των θέσεων με την φόρμα-->
+            <input type="hidden" name="total_cost" id="total-cost-input" value=""><!--πεδίο για το πέρασμα του κόστους-->
             <button type="submit" class="submitButton" id="submitButton" disabled>Κάντε Κράτηση</button><!--το submittion button που αρχικά είναι disabled (μέχρι να κληθεί η showBookingSummary)-->
         </form>
     </div>
