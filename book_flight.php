@@ -98,17 +98,14 @@
             echo "</div>";
         }
         ?>
-
-
-            <!-- Seat Map and Selection -->
             <div id="seat-map" class="seat-map" style="display: none;">
                 <h2>Επιλογή Θέσεων</h2>
                 <div class="seat-legend">
-                    <div class="legend-item"><div class="seat-available"></div> <span>Διαθέσιμη</span></div>
-                    <div class="legend-item"><div class="seat-selected"></div> <span>Επιλεγμένη</span></div>
-                    <div class="legend-item"><div class="up-front"></div> <span>Μπροστά Θέση</span></div>
-                    <div class="legend-item"><div class="exit-row-indicator"></div> <span>Έξοδος κινδύνου</span></div>
-                    <div class="legend-item"><div class="extra-legroom"></div> <span>Επιπλέον Χώρος Ποδιών</span></div>
+                    <div class="legend-item"><div class="seat-available"></div><span>Διαθέσιμη</span></div>
+                    <div class="legend-item"><div class="seat-selected"></div><span>Επιλεγμένη</span></div>
+                    <div class="legend-item"><div class="up-front"></div><span>Μπροστά Θέση</span></div>
+                    <div class="legend-item"><div class="exit-row-indicator"></div><span>Έξοδος κινδύνου</span></div>
+                    <div class="legend-item"><div class="extra-legroom"></div><span>Επιπλέον Χώρος Ποδιών</span></div>
                 </div>
 
                 <div class="airplane-container">
@@ -122,7 +119,7 @@
                     foreach ($rows as $row) {
                         $rowClass = '';
                     
-                        // Assign class based on row number
+                        //έλεγχος για το αν η σειρά αυτή έχει ιδιαίτερο χαρακτηριστικό (για να γίνει έπειτα ανάλογη χρέωση και για να εμφανίζεται διαφορετικά στο seatmap)
                         if ($row == 11) {
                             $rowClass = ' exit-row extra-legroom';
                         } else if ($row == 1 || $row == 12) {
@@ -152,12 +149,14 @@
                 <p><strong>Από:</strong> <?= htmlspecialchars($dep_name); ?></p>
                 <p><strong>Προς:</strong> <?= htmlspecialchars($arr_name); ?></p>
                 <p><strong>Ημερομηνία Πτήσης:</strong> <?= htmlspecialchars($flight_date); ?></p>
-                <p><strong>Συνολικό Κόστος:</strong> — €</p>
+                <p><strong>Συνολικό Κόστος:</strong> <span id="total-cost">€0.00</span></p>
+
+
             </div>
             
 
             <input type="hidden" name="selected_seats" id="selected-seats-input" value="">
-            <button type="submit">Κάντε Κράτηση</button>
+            <button type="submit" class="submitButton" id="submitButton" disabled>Κάντε Κράτηση</button>
         </form>
     </div>
 
@@ -201,27 +200,7 @@ function toggleSeat(seatDiv) {
     if (selectedSeats.length === maxSeats) {
         seatMap.style.display = 'none';
         passengerInputs.forEach(div => div.style.display = 'none');
-
-        // Show summary
-        const summaryDiv = document.getElementById('booking-summary');
-        const summaryPassengers = document.getElementById('summary-passengers');
-        const firstNames = document.getElementsByName('first_name[]');
-        const lastNames = document.getElementsByName('last_name[]');
-
-        const seatLabels = Array.from(selectedSeats).map(seat => {
-            const row = seat.closest('.seat-row').querySelector('.row-number').textContent;
-            const col = seat.textContent.trim();
-            return row + col;
-        });
-
-        let html = "<ul style='list-style-type: none; padding-left: 0;'>";
-        for (let i = 0; i < maxSeats; i++) {
-            html += `<li><strong>Επιβάτης ${i + 1}:</strong> ${firstNames[i].value} ${lastNames[i].value} <br> Θέση ${seatLabels[i]}</li>`;
-        }
-        html += "</ul>";
-
-        summaryPassengers.innerHTML = html;
-        summaryDiv.style.display = 'block';
+        showBookingSummary()
     }
 }
 
@@ -236,6 +215,75 @@ function updateSelectedSeatsInput() {
 
     document.getElementById('selected-seats-input').value = JSON.stringify(selectedSeats);
 }
+
+const departureTax = <?= $dep_tax ?>;
+const arrivalTax = <?= $arr_tax ?>;
+const depLat = <?= $dep_lat ?>;
+const depLon = <?= $dep_lon ?>;
+const arrLat = <?= $arr_lat ?>;
+const arrLon = <?= $arr_lon ?>;
+
+function calculateDistance(lat1, lon1, lat2, lon2) {
+    const toRad = angle => angle * Math.PI / 180;
+    const R = 6371; 
+    const dLat = toRad(lat2 - lat1);
+    const dLon = toRad(lon2 - lon1);
+    const a = Math.sin(dLat/2)**2 +
+              Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+              Math.sin(dLon/2)**2;
+    const c = 2 * Math.asin(Math.sqrt(a));
+    return R * c;
+}
+
+function showBookingSummary() {
+    const firstNames = document.getElementsByName('first_name[]');
+    const lastNames = document.getElementsByName('last_name[]');
+    const selectedSeats = document.querySelectorAll('.seat.seat-selected');
+    const seatLabels = Array.from(selectedSeats).map(seat => {
+        const rowDiv = seat.closest('.seat-row');
+        const row = rowDiv.querySelector('.row-number').textContent;
+        const letter = seat.textContent.trim();
+        return row + letter;
+    });
+
+   
+    const totalTax = departureTax + arrivalTax;
+    const flightDistance = calculateDistance(depLat, depLon, arrLat, arrLon);
+    const flightCost = flightDistance / 10;
+
+    let html = "<ul style='list-style: none; padding: 0'>";
+    let totalFinalCost = 0;
+
+    for (let i = 0; i < seatLabels.length; i++) {
+        const seat = seatLabels[i];
+        const row = parseInt(seat.match(/\d+/)[0]);
+
+        let seatCost = 0;
+        if ([1, 11, 12].includes(row)) {
+            seatCost = 20;
+        } else if (row >= 2 && row <= 10) {
+            seatCost = 10;
+        }
+
+        const ticketCost = totalTax + flightCost + seatCost;
+        totalFinalCost += ticketCost;
+
+        html += `<li><strong>Επιβάτης ${i + 1}:</strong> ${firstNames[i].value} ${lastNames[i].value}
+        <br>Θέση: ${seat} <br> Κόστος Θέσης: ${seatCost.toFixed(2)}€ <br> Κόστος Εισιτηρίου: ${ticketCost.toFixed(2)}€<br><br></li>`;
+    }
+
+    
+    html += "</ul>";
+    
+    const summaryPassengers = document.getElementById('summary-passengers');
+    const summaryDiv = document.getElementById('booking-summary');
+    document.getElementById('total-cost').textContent = `${totalFinalCost.toFixed(2)}€`;
+    summaryPassengers.innerHTML = html;
+    summaryDiv.style.display = 'block';
+    document.getElementById('submitButton').disabled = false;
+
+}
+
 </script>
 
 

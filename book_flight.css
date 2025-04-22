@@ -123,11 +123,11 @@ form button:hover {
 }
 
 .seat-row.extra-legroom {
-    background-color: yellow; /* Light yellow */
+    background-color: yellow;
 }
 
 .seat-row.up-front {
-    background-color: teal; /* Light blue */
+    background-color: teal; 
 }
 
 .seat.seat-selected {
@@ -191,3 +191,7 @@ form button:hover {
     background-color: yellow;
 }
 
+button:disabled {
+    background-color: gray;
+    cursor: not-allowed;
+}
