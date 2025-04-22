@@ -81,7 +81,6 @@
         <h1>Κράτηση Πτήσης</h1>
         <form action="my_trips.php" method="POST">
             <?php
-            $lastPassengerLastName = '';
             for ($i = 0; $i < $passengerCount; $i++) {
                 echo "<div class='passenger'>";
                 echo "<label>Όνομα:</label>";
@@ -159,10 +158,9 @@
 
     <script>
 document.addEventListener("DOMContentLoaded", function() {
-    const passengerCount = <?= json_encode($passengerCount); ?>;
-    const lastPassengerLastName = <?= json_encode($lastPassengerLastName); ?>;
+    const passengerCount = <?=($passengerCount); ?>;
     
-    if (passengerCount === 1 || lastPassengerLastName) {
+    if (passengerCount === 1 ) {
         checkLastNameInput(0);
     }
 });
