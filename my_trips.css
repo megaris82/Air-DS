@@ -10,47 +10,42 @@ body {
 }
 
 .container {
-    max-width: 1000px;
-    margin: 40px auto;
-    background: #fff;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 0 8px rgba(0,0,0,0.1);
-}
-
-h1 {
-    text-align: center;
-    margin-bottom: 30px;
+    background-color: white;
+    width: 60%;
+    padding: 30px;
+    border: 4px solid midnightblue;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top:100px;
+    margin-bottom: 100px;
 }
 
 table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 14px;
+    margin-top: 20px;
 }
 
-th, td {
+th {
     padding: 10px;
-    border: 1px solid #ccc;
     text-align: center;
-    vertical-align: top;
-}
-
-.cancel-btn {
-    background-color: #e74c3c;
+    border: 3px solid midnightblue; 
+    background-color: mediumblue;
     color: white;
-    padding: 6px 10px;
-    text-decoration: none;
-    border-radius: 4px;
-    font-size: 12px;
 }
 
-.cancel-btn:hover {
-    background-color: #c0392b;
+td {
+    padding: 10px;
+    text-align: center;
+    border:3px solid midnightblue;
 }
 
-.cancelled-row {
-    background-color: #e0e0e0 !important;
-    color: #555;
-    font-style: italic;
+button{
+    font-weight: bold;
+}
+
+button:disabled{
+    color: gray;
+    cursor: not-allowed;
 }
