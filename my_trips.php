@@ -73,6 +73,7 @@
         $stmt->bind_param("i", $cancelId);
         $stmt->execute();
         $stmt->close();
+        header('Location: my_trips.php');
     }
 ?>
 
