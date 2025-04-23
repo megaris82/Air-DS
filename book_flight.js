@@ -3,8 +3,6 @@ document.addEventListener("DOMContentLoaded", function () {
     if (passengerCount === 1) {//εμφάνιση του seatmap αν έχουμε 1 μόνο passenger (τον user)
         showSeatMap(0, passengerCount);
     }
-
-    
 });
 
 //επαλήθευση του lastname και εμφάνιση seatmap όταν συμπληρωθεί το lastname του τελευταίου επιβάτη 
@@ -21,14 +19,15 @@ function showSeatMap(i, passengerCount) {
         seatMap.style.display = isValid ? 'block' : 'none';//αν είναι έγκυρο το lastname του τελευταίου επιβάτη τότε εμφανίζεται το seatmap
     }
 
-    markReservedSeats();
+    showReservedSeats();//εμφάνιση των πιασμένων θέσεων
 }
-function markReservedSeats() {
 
-    reservedSeatsJson.forEach(seat => {
-        const seatElement = document.querySelector(`#seat-${seat.row}${seat.seat}`);
+//πιασμένες θέσεις 
+function showReservedSeats() {
+    reservedSeatsJson.forEach(seat => {//για κάθε αντικείμενο του array (row , seat)
+        const seatElement = document.querySelector(`#seat-${seat.row}${seat.seat}`);//επιλέγουμε την θέση με αυτό το id
         if (seatElement) {
-            seatElement.classList.add('seat-taken');  // Add the 'seat-taken' class to mark the seat as reserved
+            seatElement.classList.add('seat-taken');//και αλλάζουμε την css κλάση
         }
     });
 }

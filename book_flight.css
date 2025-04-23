@@ -137,7 +137,7 @@ form button:hover {
 
 .seat.seat-taken {
     background-color: red !important;
-    pointer-events: none; /* Makes the seat non-clickable */
+    pointer-events: none;
 }
 
 .aisle {

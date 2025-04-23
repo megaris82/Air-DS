@@ -67,40 +67,29 @@
     $stmt->close();
     
 
-    $getTakenSeats = "SELECT reserved_seats_json 
-            FROM reservations 
-            WHERE departure_airport_id = ? 
-            AND arrival_airport_id = ? 
-            AND reservation_date = ? 
-            AND reserved_seats_json IS NOT NULL";
-    
+    //ανάκτηση των κρατημένων θέσεων από την βάση, 
+    //έχουμε μια πτήση την ημέρα οπότε τα δύο αεροδρόμια και η ημερομηνία αποτελούν χαρακτηριστικά της πτήσης
+    $getTakenSeats = "SELECT reserved_seats_json FROM reservations WHERE departure_airport_id = ? AND arrival_airport_id = ? 
+    AND reservation_date = ? AND reserved_seats_json IS NOT NULL";
     $stmt = $conn->prepare($getTakenSeats);
     $stmt->bind_param("iis", $departure_airport_id, $arrival_airport_id, $flight_date);
     $stmt->execute();
     $stmt->bind_result($reservedSeatsJson);
     
-    // Αποθήκευση των κρατημένων θέσεων
     $reservedSeats = [];
     while ($stmt->fetch()) {
-        // Ανάκτηση των reserved seats από το JSON και αποθήκευση σε πίνακα
-        $seatsArray = json_decode($reservedSeatsJson, true);
+        //ανάκτηση των reserved seats ως json και αποθήκευση σε πίνακα
+        $seatsArray = json_decode($reservedSeatsJson, true);//ανάλυση σε php 
 
         foreach ($seatsArray as $seat) {
-            // Ελέγχουμε αν το τελευταίο χαρακτήρα είναι γράμμα (seat letter)
-            $row = substr($seat, 0, -1);  // Παίρνουμε το πρώτο κομμάτι (π.χ. '31' από '31A')
-            $column = substr($seat, -1);  // Παίρνουμε το τελευταίο χαρακτήρα (π.χ. 'A' από '31A')
-            
-            // Αποθήκευση σε array με τη μορφή [row => column]
+            $row = substr($seat, 0, -1);//παίρνουμε το πρώτο μέρος δηλαδή την σειρά
+            $column = substr($seat, -1);//το τελευταίο μέρος, δηλαδή την θέση
+            //αποθήκευση σε array με τη μορφή [row => column]
             $reservedSeats[] = ['row' => $row, 'seat' => $column];
         }
     }
     $stmt->close();
 
-    // Εμφάνιση των αναλυτικών θέσεων για debugging
-    echo "<pre>";
-    print_r($reservedSeats);
-    echo "</pre>";
-    
     $conn->close();
     /*αν ο χρήστης δεν ολοκληρώσει την κράτηση με την χρήση 
     του κουμπιού τότε όταν επιστρέψει στο home.php τότε η κράτηση του θα γίνει delete*/
@@ -174,7 +163,7 @@
                         echo "<div class='row-number'>$row</div>";//εμφάνιση αριθμού σειράς
                         
                         foreach ($columns as $col) {//δημιουργία στήλων 
-                            $seatId = $row . $col;
+                            $seatId = $row . $col;//γραμμή 28 στην js
                             $seatClass = 'seat-available';
                             echo "<div class='seat $seatClass' id='seat-$seatId' onclick='toggleSeat(this)'>$col</div>";//επιλογή θέσης υλοποίηση στο book_flight.js
                             if ($col === 'C') echo "<div class='aisle'></div>";//δημιουργία του διαδρόμου
@@ -216,7 +205,7 @@
             arrivalLat: <?= $arr_lat ?>,
             arrivalLon: <?= $arr_lon ?>
         };
-        const reservedSeatsJson = <?php echo json_encode($reservedSeats); ?>;
+        const reservedSeatsJson = <?php echo json_encode($reservedSeats); ?>;//περνάμε τον php πίνακα στην js ως json array
     </script>
     <script src="book_flight.js"></script><!--σύνδεση με την υπόλοιπη js-->
 </body>
