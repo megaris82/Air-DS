@@ -20,6 +20,17 @@ function showSeatMap(i, passengerCount) {
     if (i === passengerCount - 1) {
         seatMap.style.display = isValid ? 'block' : 'none';//αν είναι έγκυρο το lastname του τελευταίου επιβάτη τότε εμφανίζεται το seatmap
     }
+
+    markReservedSeats();
+}
+function markReservedSeats() {
+
+    reservedSeatsJson.forEach(seat => {
+        const seatElement = document.querySelector(`#seat-${seat.row}${seat.seat}`);
+        if (seatElement) {
+            seatElement.classList.add('seat-taken');  // Add the 'seat-taken' class to mark the seat as reserved
+        }
+    });
 }
 
 //υλοποίηση επιλογής θέσης

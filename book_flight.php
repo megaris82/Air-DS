@@ -66,6 +66,41 @@
     $stmt->execute();
     $stmt->close();
     
+
+    $getTakenSeats = "SELECT reserved_seats_json 
+            FROM reservations 
+            WHERE departure_airport_id = ? 
+            AND arrival_airport_id = ? 
+            AND reservation_date = ? 
+            AND reserved_seats_json IS NOT NULL";
+    
+    $stmt = $conn->prepare($getTakenSeats);
+    $stmt->bind_param("iis", $departure_airport_id, $arrival_airport_id, $flight_date);
+    $stmt->execute();
+    $stmt->bind_result($reservedSeatsJson);
+    
+    // Αποθήκευση των κρατημένων θέσεων
+    $reservedSeats = [];
+    while ($stmt->fetch()) {
+        // Ανάκτηση των reserved seats από το JSON και αποθήκευση σε πίνακα
+        $seatsArray = json_decode($reservedSeatsJson, true);
+
+        foreach ($seatsArray as $seat) {
+            // Ελέγχουμε αν το τελευταίο χαρακτήρα είναι γράμμα (seat letter)
+            $row = substr($seat, 0, -1);  // Παίρνουμε το πρώτο κομμάτι (π.χ. '31' από '31A')
+            $column = substr($seat, -1);  // Παίρνουμε το τελευταίο χαρακτήρα (π.χ. 'A' από '31A')
+            
+            // Αποθήκευση σε array με τη μορφή [row => column]
+            $reservedSeats[] = ['row' => $row, 'seat' => $column];
+        }
+    }
+    $stmt->close();
+
+    // Εμφάνιση των αναλυτικών θέσεων για debugging
+    echo "<pre>";
+    print_r($reservedSeats);
+    echo "</pre>";
+    
     $conn->close();
     /*αν ο χρήστης δεν ολοκληρώσει την κράτηση με την χρήση 
     του κουμπιού τότε όταν επιστρέψει στο home.php τότε η κράτηση του θα γίνει delete*/
@@ -172,7 +207,7 @@
     <?php include 'footer.php'; ?>
     
     <script>//πέρασμα των δεδομένων από την βάση στην js
-        const flightData = {
+        const flightData = {    
             passengerCount: <?= $passengerCount ?>,
             departureTax: <?= $dep_tax ?>,
             arrivalTax: <?= $arr_tax ?>,
@@ -181,6 +216,7 @@
             arrivalLat: <?= $arr_lat ?>,
             arrivalLon: <?= $arr_lon ?>
         };
+        const reservedSeatsJson = <?php echo json_encode($reservedSeats); ?>;
     </script>
     <script src="book_flight.js"></script><!--σύνδεση με την υπόλοιπη js-->
 </body>
