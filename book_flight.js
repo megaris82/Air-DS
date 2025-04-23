@@ -97,8 +97,9 @@ function showBookingSummary() {
     const flightDistance = calculateDistance(flightData.departureLat, flightData.departureLon, flightData.arrivalLat, flightData.arrivalLon);
     const flightCost = flightDistance / 10;
 
-    let html = "<ul style='list-style: none; padding: 0'>";//αρχικοποίηση της html για την εμφάνιση των στοιχείων σε λίστα χωρίς discs
-    let totalFinalCost = 0;
+    let html = "<ul style='list-style: none; padding: 0'>";//αρχικοποίηση μεταβλητής που αποθηκεύει html για την εμφάνιση των στοιχείων σε λίστα χωρίς discs
+    let totalFinalCost = 0;//για το γενικό κόστος
+    let totalSeatCost = 0;//για το κόστος των θέσεων
 
     //υπολογισμός κόστους θέσης για τον καθένα ξεχωριστά (η εκφώνηση αναφέρει κάτι ελαφρώς διαφορετικό αλλά αυτό έβγαζε περισσότερο νόημα)
     for (let i = 0; i < seatLabels.length; i++) {
@@ -109,15 +110,17 @@ function showBookingSummary() {
         //έλεγχος για το αν η θέση έχει κάποιο κόστος
         if ([1, 11, 12].includes(row)) {
             seatCost = 20;
+            totalSeatCost += seatCost;
         } else if (row >= 2 && row <= 10) {
             seatCost = 10;
+            totalSeatCost += seatCost;
         }
 
-        //υπολογισμός κόστους εισητηρίου για κάθε επιβάτη
+        //υπολογισμός κόστους εισητηρίου για κάθε επιβάτη και πρόσθεση στο τελικό κόστος
         const ticketCost = totalTax + flightCost + seatCost;
         totalFinalCost += ticketCost;
 
-        //προσθήκη των δεδομένων του χρήστη στην html
+        //προσθήκη των δεδομένων του χρήστη στην μεταβλητή html
         html += `<li><strong>Επιβάτης ${i + 1}:</strong> ${firstNames[i].value} ${lastNames[i].value}
         <br>Θέση: ${seat} <br> Κόστος Θέσης: ${seatCost.toFixed(2)}€ <br> Κόστος Εισιτηρίου: ${ticketCost.toFixed(2)}€<br><br></li>`;
     }
@@ -125,9 +128,10 @@ function showBookingSummary() {
     html += "</ul>";
 
     //εμφάνιση των παραπάνω όπως θέλουμε και ενεργοποίηση του κουμπιού
-    document.getElementById('summary-passengers').innerHTML = html;
+    document.getElementById('summary-passengers').innerHTML = html;//χρήση της μεταβλητής html 
     document.getElementById('booking-summary').style.display = 'block';
     document.getElementById('total-cost').textContent = `${totalFinalCost.toFixed(2)}€`;
-    document.getElementById('total-cost-input').value = totalFinalCost.toFixed(2);
-    document.getElementById('submitButton').disabled = false;
+    document.getElementById('total-cost-input').value = totalFinalCost.toFixed(2);//πέρασμα του value στο κρυφό πεδίο της φόρμας για πέρασμα στην my_trips
+    document.getElementById('seat-cost-input').value = totalSeatCost.toFixed(2);//όμοια για τις θέσεις
+    document.getElementById('submitButton').disabled = false;//ενεργοποίηση του κουμπιού
 }

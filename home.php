@@ -21,6 +21,26 @@ while ($row = $result->fetch_assoc()) {
     $airports[] = $row;
 }
 
+#διαγραφή κρατήσεων που είναι ακόμα σε κατάσταση 'pending'
+if ($isLoggedIn && $user_id !== null) {#έλεγχος ότι είναι logged in και ότι υπάρχει user_id για να μην έχουμε θέμα με null 
+    #πρώτα διαγραφή από τον reservation_user γιατί παίρνει foreign key από τον reservations
+    $deleteReservationUserQuery = "DELETE FROM reservation_user WHERE reservation_id IN (
+        SELECT reservation_id FROM reservations WHERE reservation_status = 'pending' AND reservation_id IN (
+            SELECT reservation_id FROM reservation_user WHERE user_id = ?)
+    )";
+    $stmt = $conn->prepare($deleteReservationUserQuery);
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $stmt->close();
+
+    #έπειτα διαγραφή από τον reservations όπου η κατάσταση pending και το id δεν υπάρχει μέσα στον reservation_user
+    $deletePendingReservationsQuery = "DELETE FROM reservations WHERE reservation_status = 'pending' AND
+    reservation_id NOT IN (SELECT DISTINCT reservation_id FROM reservation_user)";
+    $stmt = $conn->prepare($deletePendingReservationsQuery);
+    $stmt->execute();
+    $stmt->close();
+}
+
 $conn->close();
 ?>
 

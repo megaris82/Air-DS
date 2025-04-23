@@ -18,25 +18,6 @@
     $arrival_airport_id = $_POST['arrival_airport'] ?? '';
     $flight_date = $_POST['flight_date'] ?? '';
 
-    //insert εγγραφής στην reservations
-    // Εισαγωγή νέας κράτησης στη βάση δεδομένων με κενό JSON για τις θέσεις και κατάσταση 'pending'
-    $insertReservationQuery = "INSERT INTO reservations (departure_airport_id, arrival_airport_id,reservation_date,reservation_status,reserved_seats_json,total_amount)
-    VALUES (?, ?, ?, 'pending', ?, 0)";
-    $stmt = $conn->prepare($insertReservationQuery);
-    $empty_reserved_seats_json = json_encode([]);
-    $stmt->bind_param("iiss", $departure_airport_id, $arrival_airport_id, $flight_date, $empty_reserved_seats_json);
-    $stmt->execute();
-
-    $reservation_id = $stmt->insert_id;
-    $stmt->close();
-
-    //αντιστοίχηση της κράτησης με τον χρήστη
-    $insertUserReservationQuery = "INSERT INTO reservation_user (reservation_id, user_id)VALUES (?, ?)";
-    $stmt = $conn->prepare($insertUserReservationQuery);
-    $stmt->bind_param("ii", $reservation_id, $user_id);
-    $stmt->execute();
-    $stmt->close();
-
     //ανάκτηση των στοιχείων του user με id=user_id
     $sql = "SELECT first_name, last_name FROM users WHERE user_id = ?";
     $stmt = $conn->prepare($sql);
@@ -61,7 +42,33 @@
     $stmt->fetch();
     $stmt->close();
 
+
+
+    //για να γίνει σωστά το insert αλλά με άδειες τιμές αρχικοποιώ τα εξής
+    $empty_reserved_seats_json = null;
+    $passenger_names_json = null;
+
+    //insert εγγραφής στην reservations
+    //εισαγωγή νέας κράτησης στη βάση δεδομένων με κενό JSON για τις θέσεις και τους επιβάτες και κατάσταση 'pending'
+    $insertReservationQuery = "INSERT INTO reservations (departure_airport_id, arrival_airport_id, reservation_date, reservation_status, reserved_seats_json,
+    total_amount, departure_tax, arrival_tax, seat_cost, passenger_names) VALUES (?, ?, ?, 'pending', ?, 0, ?, ?, 0, ?)";
+    $stmt = $conn->prepare($insertReservationQuery);
+    $stmt->bind_param("iissiis",$departure_airport_id, $arrival_airport_id, $flight_date,
+    $empty_reserved_seats_json, $dep_tax, $arr_tax, $passenger_names_json);
+    $stmt->execute();
+    $reservation_id = $stmt->insert_id;
+    $stmt->close();
+
+    //αντιστοίχηση της κράτησης με τον χρήστη
+    $insertUserReservationQuery = "INSERT INTO reservation_user (reservation_id, user_id)VALUES (?, ?)";
+    $stmt = $conn->prepare($insertUserReservationQuery);
+    $stmt->bind_param("ii", $reservation_id, $user_id);
+    $stmt->execute();
+    $stmt->close();
+
     $conn->close();
+    /*αν ο χρήστης δεν ολοκληρώσει την κράτηση με την χρήση 
+    του κουμπιού τότε όταν επιστρέψει στο home.php τότε η κράτηση του θα γίνει delete*/
 ?>
 
 <!DOCTYPE html>
@@ -152,9 +159,11 @@
                 <p><strong>Ημερομηνία Πτήσης:</strong> <?= htmlspecialchars($flight_date); ?></p>
                 <p><strong>Συνολικό Κόστος:</strong> <span id="total-cost"></span></p>
             </div>
-
+                
+            <input type="hidden" name="reservation_id" value="<?= $reservation_id ?>"><!--πεδίο για το πέρασμα του reservation_id-->
             <input type="hidden" name="selected_seats" id="selected-seats-input" value=""><!--πεδίο για το πέρασμα των θέσεων με την φόρμα-->
             <input type="hidden" name="total_cost" id="total-cost-input" value=""><!--πεδίο για το πέρασμα του κόστους-->
+            <input type="hidden" name="seat_cost" id="seat-cost-input"  value=""><!-- για το κόστος των θέσεων-->
             <button type="submit" class="submitButton" id="submitButton" disabled>Κάντε Κράτηση</button><!--το submittion button που αρχικά είναι disabled (μέχρι να κληθεί η showBookingSummary)-->
         </form>
     </div>
