@@ -3,6 +3,8 @@ document.addEventListener("DOMContentLoaded", function () {
     if (passengerCount === 1) {//εμφάνιση του seatmap αν έχουμε 1 μόνο passenger (τον user)
         showSeatMap(0, passengerCount);
     }
+
+    
 });
 
 //επαλήθευση του lastname και εμφάνιση seatmap όταν συμπληρωθεί το lastname του τελευταίου επιβάτη 

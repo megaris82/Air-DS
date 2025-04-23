@@ -65,7 +65,7 @@
     $stmt->bind_param("ii", $reservation_id, $user_id);
     $stmt->execute();
     $stmt->close();
-
+    
     $conn->close();
     /*αν ο χρήστης δεν ολοκληρώσει την κράτηση με την χρήση 
     του κουμπιού τότε όταν επιστρέψει στο home.php τότε η κράτηση του θα γίνει delete*/
@@ -109,6 +109,7 @@
                 <div class="seat-legend">
                     <div class="legend-item"><div class="seat-available"></div><span>Διαθέσιμη</span></div>
                     <div class="legend-item"><div class="seat-selected"></div><span>Επιλεγμένη</span></div>
+                    <div class="legend-item"><div class="seat-taken"></div><span>Κρατημένη</span></div>
                     <div class="legend-item"><div class="up-front"></div><span>Μπροστά Θέση</span></div>
                     <div class="legend-item"><div class="exit-row-indicator"></div><span>Έξοδος κινδύνου</span></div>
                     <div class="legend-item"><div class="extra-legroom"></div><span>Επιπλέον Χώρος Ποδιών</span></div>

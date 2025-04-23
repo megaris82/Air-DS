@@ -109,7 +109,7 @@ form button:hover {
 .seat-row.exit-row::after {
     content: 'EXIT';
     font-weight: bold;
-    background-color: red;
+    background-color: darkred;
     color: white;
     padding: 5px;
     position: absolute;
@@ -156,9 +156,10 @@ form button:hover {
     font-size: 1rem;
 }
 
-.legend-item .seat,
+
 .legend-item .exit-row-indicator,
 .legend-item .extra-legroom,
+.legend-item .seat-taken,
 .legend-item .up-front ,
 .legend-item .seat-selected,
 .legend-item .seat-available {
@@ -178,12 +179,16 @@ form button:hover {
     background-color:midnightblue;
 }
 
+.legend-item .seat-taken{
+    background-color: red;
+}
+
 .legend-item .up-front {
     background-color: teal;
 }
 
 .legend-item .exit-row-indicator {
-    background-color: red;
+    background-color: darkred;
     color: white;
     font-weight: bold;
 }
