@@ -19,27 +19,6 @@
         die("Αδυναμία σύνδεσης με την βάση δεδομένων: " . $conn->connect_error);
     }
 
-    #διαγραφή κρατήσεων που είναι ακόμα σε κατάσταση 'pending' όμοια με home.php, εφόσον ο χρήστης μπορεί ενώ είναι 
-    #στο book_flight να ανακατευθυνθεί εδώ μέσω του navbar
-    if ($isLoggedIn && $user_id !== null) {#έλεγχος ότι είναι logged in και ότι υπάρχει user_id για να μην έχουμε θέμα με null 
-        #πρώτα διαγραφή από τον reservation_user γιατί παίρνει foreign key από τον reservations
-        $deleteReservationUserQuery = "DELETE FROM reservation_user WHERE reservation_id IN (
-            SELECT reservation_id FROM reservations WHERE reservation_status = 'pending' AND reservation_id IN (
-                SELECT reservation_id FROM reservation_user WHERE user_id = ?)
-        )";
-        $stmt = $conn->prepare($deleteReservationUserQuery);
-        $stmt->bind_param("i", $user_id);
-        $stmt->execute();
-        $stmt->close();
-
-        #έπειτα διαγραφή από τον reservations όπου η κατάσταση pending και το id δεν υπάρχει μέσα στον reservation_user
-        $deletePendingReservationsQuery = "DELETE FROM reservations WHERE reservation_status = 'pending' AND
-        reservation_id NOT IN (SELECT DISTINCT reservation_id FROM reservation_user)";
-        $stmt = $conn->prepare($deletePendingReservationsQuery);
-        $stmt->execute();
-        $stmt->close();
-    }
-
     //αν ήρθε φόρμα με post τότε προχωράμε στην ενημέρωση της κράτησης
     //χρησιμοποιείται το if επειδή μπορεί να μπει στο my_trips και απευθείας μέσω navbar χωρίς συμπλήρωση φόρμας
     if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['selected_seats'])){//ελέγχω ότι έχουν επιλεχθεί θέσεις για να μην υπάρχει conflict με την φόρμα πιο κάτω
@@ -74,6 +53,27 @@
         $stmt->close();
     }
 
+    #διαγραφή κρατήσεων που είναι ακόμα σε κατάσταση 'pending' όμοια με home.php, εφόσον ο χρήστης μπορεί ενώ είναι 
+    #στο book_flight να ανακατευθυνθεί εδώ μέσω του navbar
+    if ($isLoggedIn && $user_id !== null && !(isset($_POST['selected_seats']))) {#έλεγχος ότι είναι logged in, ότι υπάρχει user_id για να μην έχουμε θέμα με null έλεγχος ότι έρχεται χωρίς να κάνει submit την φόρμα μέσω των θέσεων
+        #πρώτα διαγραφή από τον reservation_user γιατί παίρνει foreign key από τον reservations
+        $deleteReservationUserQuery = "DELETE FROM reservation_user WHERE reservation_id IN (
+            SELECT reservation_id FROM reservations WHERE reservation_status = 'pending' AND reservation_id IN (
+                SELECT reservation_id FROM reservation_user WHERE user_id = ?)
+        )";
+        $stmt = $conn->prepare($deleteReservationUserQuery);
+        $stmt->bind_param("i", $user_id);
+        $stmt->execute();
+        $stmt->close();
+
+        #έπειτα διαγραφή από τον reservations όπου η κατάσταση pending και το id δεν υπάρχει μέσα στον reservation_user
+        $deletePendingReservationsQuery = "DELETE FROM reservations WHERE reservation_status = 'pending' AND
+        reservation_id NOT IN (SELECT DISTINCT reservation_id FROM reservation_user)";
+        $stmt = $conn->prepare($deletePendingReservationsQuery);
+        $stmt->execute();
+        $stmt->close();
+    }
+    
     // Ανάκτηση όλων των κρατήσεων για τον χρήστη, join στον airport για να πάρουμε τα ονόματα των αεροδρομίων (ο reservations κρατάει ids)
     $stmt = $conn->prepare("SELECT res.reservation_id, res.total_amount, res.seat_cost, res.reserved_seats_json, res.passenger_names, res.reservation_status, res.departure_airport_id, 
     res.arrival_airport_id, res.reservation_date, a1.airport_name AS departure_airport, a2.airport_name AS arrival_airport 
