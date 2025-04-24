@@ -21,7 +21,7 @@ while ($row = $result->fetch_assoc()) {
     $airports[] = $row;
 }
 
-#διαγραφή κρατήσεων που είναι ακόμα σε κατάσταση 'pending'
+#διαγραφή κρατήσεων που είναι ακόμα σε κατάσταση 'pending' 
 if ($isLoggedIn && $user_id !== null) {#έλεγχος ότι είναι logged in και ότι υπάρχει user_id για να μην έχουμε θέμα με null 
     #πρώτα διαγραφή από τον reservation_user γιατί παίρνει foreign key από τον reservations
     $deleteReservationUserQuery = "DELETE FROM reservation_user WHERE reservation_id IN (
@@ -80,7 +80,7 @@ $conn->close();
 
             <!--submit button που είναι απενεργοποιημένο αν δεν είναι logged in o user, 
             είναι ενεργοποιημένο αν δεν έχει συμπληρωθεί κάτι από τα παραπάνω αλλά δεν κάνει submit λόγω του required -->
-        <button type="submit" id="submitBtn" <?= !$isLoggedIn ? 'disabled' : '' ?>>Κάντε Κράτηση</button>
+        <button type="submit" id="submitButton" <?= !$isLoggedIn ? 'disabled' : '' ?>>Κάντε Κράτηση</button>
     </form>
 
     <?php include 'footer.php'; ?>

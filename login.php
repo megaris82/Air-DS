@@ -10,8 +10,8 @@ if ($conn->connect_error) {
     die("Αδυναμία σύνδεσης με την βάση δεδομένων: " . $conn->connect_error);
 }
 
-$reg_error = '';
-$login_error = '';
+$reg_error = '';//error για την εγγραφή
+$login_error = '';//error για την σύνδεση
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     //εγγραφή
@@ -38,7 +38,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $reg_error = "Το username ή το email υπάρχει ήδη";
             } else {//αλλιώς εγγραφή στην βάση
                 $hashed_pass = password_hash($password, PASSWORD_DEFAULT);//χρήση της password_hash της php για κρυπτογράφηση των κωδικών
-                $stmt = $conn->prepare("INSERT INTO users (first_name, last_name, username, password, email) VALUES (?, ?, ?, ?, ?)");
+                $stmt = $conn->prepare("INSERT INTO users (first_name, last_name, username, password, email) VALUES (?, ?, ?, ?, ?)");//εισαγωγή νέου χρήστη στην βάση
                 $stmt->bind_param("sssss", $first_name, $last_name, $username, $hashed_pass, $email);
                 $stmt->execute();
                 $reg_success = true;// εμφάνιση alert για την επιτυχή εγγραφή

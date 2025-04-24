@@ -16,7 +16,7 @@ if (isset($_GET['logout']) && $_GET['logout'] === 'true') {#διαγραφή coo
     <link rel="stylesheet" href="navbar.css">
 </head>
 <body>
-    <!--για το navbar θα χρησιμοποιησω κλαση logo, main και login-->
+    <!--για το navbar θα χρησιμοποιησω κλαση logo, nav (main και login)-->
     <nav class="navbar">
         <div class="logo">
             <img src="logo.png" alt="Air DS Logo">

@@ -14,7 +14,6 @@ function showSeatMap(i, passengerCount) {
         lastNameInput.value.length <= 20 &&
         /^[A-Za-zΑ-Ωα-ω]+$/.test(lastNameInput.value);//validation όπως και στο book_flight.php
 
-    //
     if (i === passengerCount - 1) {
         seatMap.style.display = isValid ? 'block' : 'none';//αν είναι έγκυρο το lastname του τελευταίου επιβάτη τότε εμφανίζεται το seatmap
     }
@@ -37,7 +36,7 @@ function toggleSeat(seatDiv) {
     //αν η θέση δεν είναι διαθέσιμη τότε δεν κάνουμε τίποτα
     if (!seatDiv.classList.contains('seat-available')) return;
 
-    //αλιώς αλλάζουμε την κλάση της σε διαθέσιμη
+    //αλιώς αλλάζουμε την κλάση της σε επιλεγμένη
     seatDiv.classList.toggle('seat-selected');
 
     const maxSeats = flightData.passengerCount;//πόσες θέσεις χρειαζόμαστε
@@ -72,7 +71,7 @@ function updateSelectedSeatsInput() {
 
 //συνάρτηση για τον υπολογισμό της απόστασης, την πήρα από(https://www.geeksforgeeks.org/haversine-formula-to-find-distance-between-two-points-on-a-sphere/)
 function calculateDistance(lat1, lon1, lat2, lon2) {
-    //Διαφορά γεωγραφικού πλάτους και μήκους σε ακτίνια
+    //διαφορά γεωγραφικού πλάτους και μήκους σε ακτίνια
     let dLat = (lat2 - lat1) * Math.PI / 180.0;
     let dLon = (lon2 - lon1) * Math.PI / 180.0;
 

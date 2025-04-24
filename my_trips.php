@@ -19,6 +19,27 @@
         die("Αδυναμία σύνδεσης με την βάση δεδομένων: " . $conn->connect_error);
     }
 
+    #διαγραφή κρατήσεων που είναι ακόμα σε κατάσταση 'pending' όμοια με home.php, εφόσον ο χρήστης μπορεί ενώ είναι 
+    #στο book_flight να ανακατευθυνθεί εδώ μέσω του navbar
+    if ($isLoggedIn && $user_id !== null) {#έλεγχος ότι είναι logged in και ότι υπάρχει user_id για να μην έχουμε θέμα με null 
+        #πρώτα διαγραφή από τον reservation_user γιατί παίρνει foreign key από τον reservations
+        $deleteReservationUserQuery = "DELETE FROM reservation_user WHERE reservation_id IN (
+            SELECT reservation_id FROM reservations WHERE reservation_status = 'pending' AND reservation_id IN (
+                SELECT reservation_id FROM reservation_user WHERE user_id = ?)
+        )";
+        $stmt = $conn->prepare($deleteReservationUserQuery);
+        $stmt->bind_param("i", $user_id);
+        $stmt->execute();
+        $stmt->close();
+
+        #έπειτα διαγραφή από τον reservations όπου η κατάσταση pending και το id δεν υπάρχει μέσα στον reservation_user
+        $deletePendingReservationsQuery = "DELETE FROM reservations WHERE reservation_status = 'pending' AND
+        reservation_id NOT IN (SELECT DISTINCT reservation_id FROM reservation_user)";
+        $stmt = $conn->prepare($deletePendingReservationsQuery);
+        $stmt->execute();
+        $stmt->close();
+    }
+
     //αν ήρθε φόρμα με post τότε προχωράμε στην ενημέρωση της κράτησης
     //χρησιμοποιείται το if επειδή μπορεί να μπει στο my_trips και απευθείας μέσω navbar χωρίς συμπλήρωση φόρμας
     if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['selected_seats'])){//ελέγχω ότι έχουν επιλεχθεί θέσεις για να μην υπάρχει conflict με την φόρμα πιο κάτω
@@ -50,7 +71,6 @@
         $stmt->bind_param("sddsi", $selectedSeats, $totalCost, $seatsCost, $passengerNamesJson, $reservation_id);
         $stmt->execute();
         
-
         $stmt->close();
     }
 
@@ -75,6 +95,8 @@
         $stmt->close();
         header('Location: my_trips.php');
     }
+
+    $conn->close();
 ?>
 
 <!DOCTYPE html>
@@ -91,8 +113,8 @@
     <div class="container">
         <h1>Λεπτομέρειες Κράτησης</h1>
 
-        <?php if ($result->num_rows > 0): ?>
-            <table>
+        <?php if ($result->num_rows > 0): ?><!-- αν ο χρήστης έχει κάνει κρατήσεις-->
+            <table><!--δημιουργία πίνακα για τις κρατήσεις -->
                 <thead>
                     <tr>
                         <th>Αεροδρόμιο Αναχώρησης</th>
@@ -109,7 +131,7 @@
                 <tbody>
                     <?php while ($row = $result->fetch_assoc()): ?>
                         <?php 
-                            // Ανάκτηση και μετατροπή των JSON δεδομένων
+                            //ανάκτηση και μετατροπή των δεδομένων από json σε php array
                             $reservedSeats = json_decode($row['reserved_seats_json'], true); 
                             $passengerNames = json_decode($row['passenger_names'], true);
                             
@@ -122,7 +144,7 @@
                             $canCancel = $daysToFlight->invert === 0 && $daysToFlight->days >= 30 && $row['reservation_status'] !== 'cancelled';
                         ?>
                     
-                        
+                        <!--γραμμή  του πινάκα, γκρι αν το status canclled, αλλίως άσπρο-->
                         <tr style="background-color: <?php echo $row['reservation_status'] === 'cancelled' ? 'gray' : 'white'; ?>">
                             <td><?php echo htmlspecialchars($row['departure_airport']); ?></td>
                             <td><?php echo htmlspecialchars($row['arrival_airport']); ?></td>
@@ -132,17 +154,17 @@
                             <td><?php echo htmlspecialchars($row['seat_cost']); ?> €</td>
                             <td><?php echo htmlspecialchars($row['total_amount']); ?> €</td>
                             <td><?php echo htmlspecialchars($row['reservation_status']); ?></td>
-                            <td>
+                            <td><!--το τελευταίο πεδίο κάθε γραμμής είναι form το οποίο επιτρέπει την ακύρωση της κράτησης (όχι την διαγραφή της, την διαγραφή των θέσεων και την αλλαγή του status)-->
                                 <form method="post" class="cancel">
                                     <input type="hidden" name="cancel_reservation_id" value="<?php echo $row['reservation_id']; ?>">
-                                    <button type="submit" <?php echo !$canCancel ? 'disabled class="disabled"' : ''; ?>>Ακύρωση κράτησης</button>
+                                    <button type="submit" <?php echo !$canCancel ? 'disabled class="disabled"' : ''; ?>>Ακύρωση κράτησης</button><!-- το κουμπί είναι disabled αν δεν μπορεί να ακυρωθεί η πτήση (gerasimos2 πτήση 2)-->
                                 </form>
                             </td>
                         </tr>
                     <?php endwhile; ?>
                 </tbody>
             </table>
-        <?php else: ?>
+        <?php else: ?><!-- αν ο χρήστης ΔΕΝ έχει κάνει κρατήσεις-->
             <h2>Δεν έχετε κάνει καμία κράτηση ακόμα.</h2>
         <?php endif; ?>
     </div>

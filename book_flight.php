@@ -42,8 +42,6 @@
     $stmt->fetch();
     $stmt->close();
 
-
-
     //για να γίνει σωστά το insert αλλά με άδειες τιμές αρχικοποιώ τα εξής
     $empty_reserved_seats_json = null;
     $passenger_names_json = null;
@@ -66,7 +64,6 @@
     $stmt->execute();
     $stmt->close();
     
-
     //ανάκτηση των κρατημένων θέσεων από την βάση, 
     //έχουμε μια πτήση την ημέρα οπότε τα δύο αεροδρόμια και η ημερομηνία αποτελούν χαρακτηριστικά της πτήσης
     $getTakenSeats = "SELECT reserved_seats_json FROM reservations WHERE departure_airport_id = ? AND arrival_airport_id = ? 
@@ -92,7 +89,7 @@
 
     $conn->close();
     /*αν ο χρήστης δεν ολοκληρώσει την κράτηση με την χρήση 
-    του κουμπιού τότε όταν επιστρέψει στο home.php τότε η κράτηση του θα γίνει delete*/
+    του κουμπιού τότε όταν επιστρέψει στο home.php ή στο my_trips.php τότε η κράτηση του θα γίνει delete*/
 ?>
 
 <!DOCTYPE html>
@@ -168,7 +165,6 @@
                             echo "<div class='seat $seatClass' id='seat-$seatId' onclick='toggleSeat(this)'>$col</div>";//επιλογή θέσης υλοποίηση στο book_flight.js
                             if ($col === 'C') echo "<div class='aisle'></div>";//δημιουργία του διαδρόμου
                         }
-
                         echo "</div>";
                     }
                     ?>
